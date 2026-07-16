@@ -1,19 +1,27 @@
-const weatherForm = document.querySelector('.weatherForm');
-const cityCountryInput = document.querySelector('.city-country-input');
+// === STEP 1: Select DOM Elements ===
+// Now using the form ID instead of class
+const weatherForm = document.getElementById('weatherForm');
+const cityCountryInput = document.getElementById('cityInput');
 const card = document.querySelector('.card');
-const apiKey = 'PU2A8NQTBL'; // Replace with your actual API key
+const weatherDisplay = document.getElementById('weatherDisplay');
 
+// Your OpenWeatherMap API key
+const apiKey = 'cd91ff862148c91c13af22fe5f21ca55';
 
+// === STEP 2: Event Listener for Form Submit ===
 weatherForm.addEventListener('submit', async event => {
   event.preventDefault();
+  
   const cityCountry = cityCountryInput.value.trim();
   
   if (cityCountry) {
     try {
+      console.log('Fetching weather for:', cityCountry);
       const weatherData = await getweatherInfo(cityCountry);
+      console.log('Weather data received:', weatherData);
       displayWeatherInfo(weatherData);
     } catch (error) {
-      console.error(error);
+      console.error('Error in submit handler:', error);
       displayError(error.message || 'Failed to fetch weather data');
     }
   } else {
@@ -21,91 +29,123 @@ weatherForm.addEventListener('submit', async event => {
   }
 });
 
+// === STEP 3: Fetch Weather Data from API ===
 async function getweatherInfo(cityCountry) {
-  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(cityCountry)}?unitGroup=metric&contentType=json&key=${apiKey}`;
+  const encodedCity = encodeURIComponent(cityCountry);
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodedCity}&units=metric&appid=${apiKey}`;
+  
+  console.log('Fetching URL:', url);
 
   try {
     const response = await fetch(url);
+    console.log('Response status:', response.status);
     
     if (!response.ok) {
+      let errorMessage = '';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || '';
+      } catch (e) {
+        errorMessage = await response.text();
+      }
+      
       if (response.status === 404) {
-        throw new Error('City or country not found. Please check your spelling.');
+        throw new Error(`City "${cityCountry}" not found. Please check the spelling.`);
+      } else if (response.status === 401) {
+        throw new Error(`Invalid API key. Please check your API key.`);
       } else if (response.status === 403) {
-        throw new Error('API key is invalid or expired.');
+        throw new Error(`API key is invalid or expired.`);
       } else {
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        throw new Error(`Error ${response.status}: ${errorMessage || response.statusText}`);
       }
     }
     
     const data = await response.json();
-    console.log('Weather Data:', data);
+    console.log('Successfully parsed data:', data);
     return data;
     
   } catch (error) {
-    throw new Error(`Failed to fetch weather data: ${error.message}`);
+    console.error('Fetch error:', error);
+    throw new Error(`Failed to fetch weather: ${error.message}`);
   }
 }
 
+// === STEP 4: Display Weather Information ===
 function displayWeatherInfo(weatherData) {
+  console.log('Displaying weather info');
+  
+  // Extract data from API response
+  const cityName = weatherData.name || "Unknown City";
+  const countryCode = weatherData.sys?.country || "";
+  const temp = weatherData.main?.temp || "N/A";
+  const humidity = weatherData.main?.humidity || "N/A";
+  const weatherDescription = weatherData.weather?.[0]?.description || "No description";
+  const iconCode = weatherData.weather?.[0]?.icon || "01d";
+  const windSpeed = weatherData.wind?.speed || "N/A";
+  
+  const tempDisplay = Math.round(temp);
+  const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  
   // Clear previous content
-  card.textContent = "";
-  card.style.display = "flex";
-  card.style.flexDirection = "column";
-  card.style.alignItems = "center";
-  card.style.padding = "20px";
+  weatherDisplay.innerHTML = "";
+  weatherDisplay.style.display = "flex";
+  weatherDisplay.style.flexDirection = "column";
+  weatherDisplay.style.alignItems = "center";
+  weatherDisplay.style.padding = "20px";
+  weatherDisplay.style.width = "100%";
   
-  // Extract data from the response
-  const location = weatherData.resolvedAddress || weatherData.address || "Unknown Location";
-  const currentConditions = weatherData.currentConditions || weatherData.days?.[0] || {};
-  const temp = currentConditions.temp || "N/A";
-  const conditions = currentConditions.conditions || "No conditions available";
-  const humidity = currentConditions.humidity || "N/A";
-  const windspeed = currentConditions.windspeed || "N/A";
-  const description = weatherData.description || `Weather in ${location}`;
+  // Create and append elements to weatherDisplay
+  const cityNameEl = document.createElement("h1");
+  cityNameEl.textContent = `${cityName}${countryCode ? `, ${countryCode}` : ''}`;
+  cityNameEl.classList.add("city-name");
   
-  // Create and display elements
-  const cityName = document.createElement("h1");
-  cityName.textContent = location;
-  cityName.classList.add("city-name");
+  const iconEl = document.createElement("img");
+  iconEl.src = iconUrl;
+  iconEl.alt = weatherDescription;
+  iconEl.style.width = "80px";
+  iconEl.style.height = "80px";
+  iconEl.style.margin = "10px 0";
   
-  const tempDisplay = document.createElement("p");
-  tempDisplay.textContent = `🌡️ Temperature: ${temp}°C`;
-  tempDisplay.classList.add("temp-display");
+  const tempEl = document.createElement("p");
+  tempEl.textContent = `🌡️ ${tempDisplay}°C`;
+  tempEl.classList.add("temp-display");
   
-  const descDisplay = document.createElement("p");
-  descDisplay.textContent = description;
-  descDisplay.classList.add("desc-display");
+  const descriptionEl = document.createElement("p");
+  const capitalizedDesc = weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1);
+  descriptionEl.textContent = capitalizedDesc;
+  descriptionEl.classList.add("conditions-display");
   
-  const conditionsDisplay = document.createElement("p");
-  conditionsDisplay.textContent = `☁️ ${conditions}`;
-  conditionsDisplay.classList.add("conditions-display");
+  const humidityEl = document.createElement("p");
+  humidityEl.textContent = `💧 Humidity: ${humidity}%`;
+  humidityEl.classList.add("humidity-display");
   
-  const humidityDisplay = document.createElement("p");
-  humidityDisplay.textContent = `💧 Humidity: ${humidity}%`;
-  humidityDisplay.classList.add("humidity-display");
+  const windEl = document.createElement("p");
+  windEl.textContent = `💨 Wind: ${windSpeed} km/h`;
+  windEl.classList.add("wind-display");
   
-  const windDisplay = document.createElement("p");
-  windDisplay.textContent = `💨 Wind Speed: ${windspeed} km/h`;
-  windDisplay.classList.add("wind-display");
-  
-  // Append all elements to card
-  card.appendChild(cityName);
-  card.appendChild(tempDisplay);
-  card.appendChild(descDisplay);
-  card.appendChild(conditionsDisplay);
-  card.appendChild(humidityDisplay);
-  card.appendChild(windDisplay);
+  // Append all elements to weatherDisplay
+  weatherDisplay.appendChild(cityNameEl);
+  weatherDisplay.appendChild(iconEl);
+  weatherDisplay.appendChild(tempEl);
+  weatherDisplay.appendChild(descriptionEl);
+  weatherDisplay.appendChild(humidityEl);
+  weatherDisplay.appendChild(windEl);
 }
 
+// === STEP 5: Display Error Messages ===
 function displayError(message) {
+  console.error('Displaying error:', message);
+  
   const errorDisplay = document.createElement("p");
   errorDisplay.textContent = message;
   errorDisplay.classList.add("displayError");
 
-  card.textContent = "";
-  card.style.display = "flex";
-  card.style.justifyContent = "center";
-  card.style.alignItems = "center";
-  card.style.padding = "20px";
-  card.appendChild(errorDisplay);
+  // Clear both card and weatherDisplay
+  weatherDisplay.innerHTML = "";
+  weatherDisplay.style.display = "flex";
+  weatherDisplay.style.justifyContent = "center";
+  weatherDisplay.style.alignItems = "center";
+  weatherDisplay.style.padding = "20px";
+  weatherDisplay.style.minHeight = "100px";
+  weatherDisplay.appendChild(errorDisplay);
 }

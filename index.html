@@ -8,9 +8,22 @@
 </head>
 <body>
   <div class="card">
-    <input type="text" class="city-country-input" placeholder="Enter city/country" required>
-    <button type="submit" class="weatherForm">Get Weather</button>
-  
+    <!-- Added proper form element with id and name attributes -->
+    <form id="weatherForm" class="weather-form">
+      <label for="cityInput" class="visually-hidden">Enter city or country</label>
+      <input 
+        type="text" 
+        id="cityInput" 
+        name="city" 
+        class="city-country-input" 
+        placeholder="Enter city/country" 
+        required
+        autocomplete="off"
+      >
+      <button type="submit" class="weatherForm">Get Weather</button>
+    </form>
+    <!-- Weather results will be displayed here -->
+    <div id="weatherDisplay"></div>
   </div>
 
   <script type="module" src="script.js"></script>

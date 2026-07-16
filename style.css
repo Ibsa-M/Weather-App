@@ -9,22 +9,43 @@ body {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
   padding: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   max-width: 500px;
   width: 90%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+/* Hidden label for accessibility (screen readers can still read it) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Form styling */
+.weather-form {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .city-country-input {
-  font-size: 20px;
-  padding: 10px 15px;
-  border-radius: 8px;
+  font-size: 18px;
+  padding: 12px 18px;
+  border-radius: 10px;
   border: 2px solid #ddd;
   width: 100%;
   margin-bottom: 15px;
@@ -35,27 +56,32 @@ body {
 .city-country-input:focus {
   outline: none;
   border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
 .weatherForm {
-  font-size: 20px;
-  padding: 10px 30px;
+  font-size: 18px;
+  padding: 12px 30px;
   cursor: pointer;
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
+  font-weight: bold;
   transition: all 0.3s;
   width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .weatherForm:hover {
-  background-color: #45a049;
-  transform: scale(1.02);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
 }
 
 .weatherForm:active {
-  transform: scale(0.98);
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* Weather display styles */
@@ -63,37 +89,40 @@ body {
   font-size: 32px;
   margin: 10px 0 5px 0;
   color: #333;
+  text-align: center;
+  font-weight: bold;
 }
 
 .temp-display {
-  font-size: 28px;
+  font-size: 48px;
   font-weight: bold;
   margin: 5px 0;
   color: #2196F3;
 }
 
-.desc-display {
-  font-size: 18px;
+.conditions-display {
+  font-size: 22px;
   margin: 5px 0;
   color: #555;
-  font-style: italic;
+  font-weight: 500;
 }
 
-.conditions-display,
 .humidity-display,
 .wind-display {
-  font-size: 16px;
+  font-size: 18px;
   margin: 5px 0;
   color: #444;
 }
 
 .displayError {
-  color: #f44336;
+  color: #d32f2f;
   font-size: 18px;
   font-weight: bold;
   text-align: center;
   padding: 20px;
   background: #ffebee;
-  border-radius: 8px;
-  border: 2px solid #f44336;
+  border-radius: 10px;
+  border: 2px solid #d32f2f;
+  width: 100%;
+  box-sizing: border-box;
 }
